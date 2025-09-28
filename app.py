@@ -14,7 +14,8 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],  # Vite dev server ports
+    #allow_origins=["http://localhost:5173", "http://localhost:5174"],  # Vite dev server ports
+    allow_origins=["*"],  # Vite dev server ports
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,6 +41,12 @@ async def chat(message: ChatMessage):
     # If both checks pass, process the message
     response = await get_llm_response(message.message)
     return {"response": response}
+
+
+@app.get("/api/health")
+async def health():
+    """Health check endpoint to verify the app is running."""
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
