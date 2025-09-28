@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+openai
+aiohttp
+requests
+pydantic
+azure-core
+azure-ai-contentsafety==1.0.0
