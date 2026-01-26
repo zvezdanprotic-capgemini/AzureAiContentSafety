@@ -20,10 +20,15 @@ This project consists of a Python FastAPI backend that provides a safe LLM chat 
 1. Create a `.env` file in the root directory with your Azure credentials:
 ```env
 AZURE_OPENAI_ENDPOINT=your_endpoint
-AZURE_OPENAI_KEY=your_key
-AZURE_OPENAI_DEPLOYMENT=your_deployment
+AZURE_OPENAI_API_KEY=your_key
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment
 AZURE_CONTENT_SAFETY_ENDPOINT=your_endpoint
 AZURE_CONTENT_SAFETY_KEY=your_key
+
+# Optional: if you already have an Azure OpenAI "API base" URL from another sample,
+# you can set this instead of AZURE_OPENAI_ENDPOINT and the backend will derive it.
+# AZURE_OPENAI_API_BASE=https://<resource>.openai.azure.com/openai/v1/
 ```
 
 2. Install Python dependencies:
@@ -33,7 +38,7 @@ pip install -r requirements.txt
 
 3. Run the backend:
 ```bash
-uvicorn app:app --reload
+uvicorn backend.app:app --reload
 ```
 
 ### Frontend

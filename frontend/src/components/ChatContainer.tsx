@@ -42,7 +42,7 @@ export const ChatContainer = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/chat', {
+      const response = await axios.post('/api/chat', {
         message: userMessage.content,
       });
 
