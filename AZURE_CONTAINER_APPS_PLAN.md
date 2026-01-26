@@ -1,7 +1,5 @@
 # Plan: Run frontend + backend as Azure Container Apps (ACR-backed)
 
-Date: 2026-01-25
-
 This plan is split into two phases:
 
 - Phase 1: local containerization + local Docker testing (using the existing repo-root `.env`)

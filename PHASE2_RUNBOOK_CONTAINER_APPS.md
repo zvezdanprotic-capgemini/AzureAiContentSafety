@@ -1,7 +1,5 @@
 # Phase 2 Runbook — Deploy to Azure Container Apps (ACR + Key Vault)
 
-Date: 2026-01-25
-
 Goal:
 - Build/push `frontend` + `backend` container images to Azure Container Registry (ACR)
 - Run both as Azure Container Apps (ACA) in the same ACA Environment

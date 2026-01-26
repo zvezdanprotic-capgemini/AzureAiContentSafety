@@ -68,8 +68,8 @@ export const ChatContainer = () => {
   };
 
   return (
-    <Box h="100vh" p={4}>
-      <VStack h="full" spacing={4}>
+    <Box h="100vh" display="flex" alignItems="center" justifyContent="center" p={4}>
+      <VStack h="80vh" w="full" maxW="900px" spacing={4}>
         <Box
           flex={1}
           w="full"

@@ -24,9 +24,15 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  /* Let the app control layout; the Vite starter flex layout can cause left-anchoring. */
+  display: block;
   min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Ensure the React root can take full viewport width/height for centering layouts. */
+#root {
+  width: 100%;
   min-height: 100vh;
 }
 
