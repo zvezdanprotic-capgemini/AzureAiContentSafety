@@ -98,6 +98,51 @@ def test_no_pii():
     print(f"✓ No PII test passed")
 
 
+def test_ip_address_masking():
+    """Test that IP addresses are properly masked."""
+    text = "Server IP is 192.168.1.1 and backup is 10.0.0.5"
+    masked, mapping = mask_pii(text)
+    
+    assert "192.168.1.1" not in masked
+    assert "10.0.0.5" not in masked
+    assert "[IP_ADDRESS_" in masked
+    assert len(mapping) == 2
+    
+    restored = restore_pii(masked, mapping)
+    assert restored == text
+    print(f"✓ IP address test passed: masked {len(mapping)} IPs")
+
+
+def test_url_masking():
+    """Test that URLs are properly masked."""
+    test_cases = [
+        "Visit https://example.com for more info",
+        "Check www.github.com/repo",
+        "Go to http://test.org/path/to/page",
+    ]
+    
+    for text in test_cases:
+        masked, mapping = mask_pii(text)
+        assert "[URL_" in masked
+        assert len(mapping) >= 1
+        
+        restored = restore_pii(masked, mapping)
+        assert restored == text
+        print(f"✓ URL test passed: {text[:30]}...")
+
+
+def test_url_doesnt_match_email():
+    """Test that emails are not double-masked by URL pattern."""
+    text = "Email: user@example.com"
+    masked, mapping = mask_pii(text)
+    
+    # Should only have one mapping (email), not two (email + url)
+    assert len(mapping) == 1
+    assert "[EMAIL_" in masked
+    assert "[URL_" not in masked
+    print(f"✓ Email/URL distinction test passed")
+
+
 def test_pii_protector_reset():
     """Test that PIIProtector can be reset between uses."""
     protector = PIIProtector()
@@ -125,6 +170,9 @@ def run_all_tests():
         test_ssn_masking()
         test_credit_card_masking()
         test_no_pii()
+        test_ip_address_masking()
+        test_url_masking()
+        test_url_doesnt_match_email()
         test_pii_protector_reset()
         
         print("\n✓ All tests passed!\n")

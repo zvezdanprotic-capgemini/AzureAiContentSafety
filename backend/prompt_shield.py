@@ -58,17 +58,17 @@ async def is_prompt_safe_from_jailbreak(user_prompt: str) -> Tuple[bool, Dict[st
         - pii_mapping: Dictionary mapping PII placeholders to original values
     """
 
+    # Mask PII before sending to Azure Content Safety
+    masked_prompt, pii_mapping = mask_pii(user_prompt)
+    
+    print(f"Original prompt length: {len(user_prompt)}, Masked prompt length: {len(masked_prompt)}")
+    if pii_mapping:
+        print(f"Masked {len(pii_mapping)} PII items in jailbreak detection")
+
     try:
         subscription_key = os.environ["AZURE_CONTENT_SAFETY_KEY"]
         endpoint = os.environ["AZURE_CONTENT_SAFETY_ENDPOINT"]
         api_version = "2024-09-01"
-        
-        # Mask PII before sending to Azure Content Safety
-        masked_prompt, pii_mapping = mask_pii(user_prompt)
-        
-        print(f"Original prompt length: {len(user_prompt)}, Masked prompt length: {len(masked_prompt)}")
-        if pii_mapping:
-            print(f"Masked {len(pii_mapping)} PII items in jailbreak detection")
 
         # Build the request body with masked prompt
         data = shield_prompt_body(user_prompt=masked_prompt)
@@ -82,7 +82,8 @@ async def is_prompt_safe_from_jailbreak(user_prompt: str) -> Tuple[bool, Dict[st
         if response.status_code != 200:
             print(f"Jailbreak detection error: {response.status_code}, {response.text}")
             # On error, default to safe to prevent blocking legitimate queries
-            return True, {}
+            # Preserve PII mapping for potential error message use
+            return True, pii_mapping
 
         result = response.json()
         print("shieldPrompt result:", result)
@@ -95,7 +96,8 @@ async def is_prompt_safe_from_jailbreak(user_prompt: str) -> Tuple[bool, Dict[st
     except Exception as e:
         print(f"Error in jailbreak detection: {str(e)}")
         # On error, default to safe to prevent blocking legitimate queries
-        return True, {}
+        # Preserve PII mapping even on error
+        return True, pii_mapping
 
 
 if __name__ == "__main__":

@@ -59,7 +59,9 @@ async def is_content_safe(text: str) -> Tuple[bool, Dict[str, str]]:
 
         except HttpResponseError as e:
             print(f"Content Safety API error: {str(e)}")
-            return False, {}
+            # Return PII mapping even on error for potential use in error responses
+            return False, pii_mapping
         except Exception as e:
             print(f"Unexpected error in content safety check: {str(e)}")
-            return False, {}
+            # Return PII mapping even on error
+            return False, pii_mapping

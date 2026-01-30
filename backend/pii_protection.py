@@ -11,15 +11,16 @@ from typing import Dict, Tuple
 class PIIProtector:
     """Handles PII detection, masking, and restoration."""
 
-    # PII patterns with regex
+    # PII patterns with regex - Order matters! Process more specific patterns first
     PII_PATTERNS = {
+        "ssn": r'\b\d{3}-\d{2}-\d{4}\b',
+        "credit_card": r'\b\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}\b',
         "email": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
         "phone": r'\b(?:\+?1[-.]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
-        "ssn": r'\b\d{3}-\d{2}-\d{4}\b',
-        "credit_card": r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b',
-        "ip_address": r'\b(?:\d{1,3}\.){3}\d{1,3}\b',
-        # URL pattern - simplified to catch common cases
-        "url": r'\b(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?\b',
+        # URL pattern - more specific to avoid matching email domains
+        "url": r'\b(?:https?://|www\.)[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?\b',
+        # IP address pattern with basic validation (0-255 per octet)
+        "ip_address": r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b',
     }
 
     def __init__(self):
@@ -67,14 +68,19 @@ class PIIProtector:
         """
         mapping = {}
         matches = re.finditer(pattern, text)
+        
+        # Track already processed values for efficiency
+        seen_values = set()
 
         # Process matches in reverse order to maintain string positions
         for match in reversed(list(matches)):
             original_value = match.group(0)
             
             # Skip if this exact value was already masked
-            if original_value in [v for v in mapping.values()]:
+            if original_value in seen_values:
                 continue
+            
+            seen_values.add(original_value)
             
             # Create placeholder
             self.placeholder_counter[pii_type] += 1
