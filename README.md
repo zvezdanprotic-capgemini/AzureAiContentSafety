@@ -69,8 +69,16 @@ The frontend will be available at http://localhost:5173 and will connect to the 
 ## Features
 
 - Real-time chat interface
+- **PII Protection**: Automatically masks personally identifiable information before sending to Azure Content Safety
 - Content safety checking using Azure Content Moderator
+- Jailbreak attempt detection
 - LLM responses using Azure OpenAI
 - Modern UI with Chakra UI
 - TypeScript support
 - Fully asynchronous backend
+
+### PII Protection
+
+The application automatically detects and masks PII (emails, phone numbers, SSNs, credit cards, IP addresses, URLs) before sending messages to Azure Content Safety APIs. This ensures user privacy while still allowing effective content moderation.
+
+For detailed information, see [PII_PROTECTION.md](PII_PROTECTION.md).
