@@ -1,12 +1,12 @@
 # PII Protection Implementation - Summary
 
 ## Problem Statement
-Make sure that PII information is hidden before even being sent to Azure Content Safety, and then recovered later if the results are referencing it.
+Make sure that PII information is hidden before being sent to **ALL Azure services** (Content Safety, OpenAI, etc.), and then recovered later if the results are referencing it.
 
 ## Solution Overview
 Implemented a comprehensive PII protection system that:
 1. **Detects** common PII patterns using regex
-2. **Masks** PII with placeholder tokens before API calls
+2. **Masks** PII with placeholder tokens before **all** Azure API calls
 3. **Preserves** mappings for potential restoration
 4. **Restores** PII in responses when needed
 
@@ -28,12 +28,17 @@ Implemented a comprehensive PII protection system that:
    - Function signature validation
    - All tests passing ✓
 
-4. **`demo_pii_protection.py`** (106 lines)
+4. **`test_openai_pii_protection.py`** (NEW - 175 lines)
+   - Tests PII masking for Azure OpenAI calls
+   - Tests PII restoration in LLM responses
+   - All tests passing ✓
+
+5. **`demo_pii_protection.py`** (106 lines)
    - Interactive demonstration script
    - Shows before/after examples
    - Visual proof of concept
 
-5. **`PII_PROTECTION.md`** (200 lines)
+6. **`PII_PROTECTION.md`** (200+ lines)
    - Comprehensive documentation
    - Architecture explanation
    - Usage examples and security considerations
@@ -49,21 +54,27 @@ Implemented a comprehensive PII protection system that:
    - Masks PII before jailbreak detection API call
    - Preserves PII mapping in all cases
 
-3. **`backend/app.py`**
-   - Collects PII mappings from both safety checks
-   - Combines mappings for comprehensive tracking
-   - Restores PII in responses when needed
-   - Added architectural documentation
+3. **`backend/openai_client.py`** (NEW UPDATE)
+   - Added PII masking before sending to Azure OpenAI
+   - Accepts optional `pii_mapping` parameter to reuse existing mappings
+   - Automatically restores PII in LLM responses
+   - Ensures no actual PII is sent to Azure OpenAI
 
-4. **`README.md`**
-   - Added PII protection to features list
+4. **`backend/app.py`**
+   - Collects PII mappings from both safety checks
+   - Passes combined mapping to OpenAI client
+   - PII automatically restored in final response
+   - Removed obsolete architectural decision comments
+
+5. **`README.md`**
+   - Updated to reflect complete PII protection for all Azure services
    - Link to detailed documentation
 
 ## Code Statistics
-- **Total lines added**: ~851 lines
-- **Files changed**: 9 files
-- **New modules**: 1 core module + 3 test/demo files
-- **Test coverage**: 100% of PII patterns tested
+- **Total lines added**: ~1000+ lines
+- **Files changed**: 11 files
+- **New modules**: 1 core module + 4 test/demo files
+- **Test coverage**: 100% of PII patterns tested + OpenAI integration tests
 
 ## Security Verification
 ✓ **CodeQL Security Scan**: No vulnerabilities detected
@@ -75,7 +86,7 @@ Implemented a comprehensive PII protection system that:
   - Efficient duplicate detection
 
 ## What Gets Protected
-### PII Masked (sent to Azure Content Safety)
+### PII Masked Before Sending to ALL Azure Services
 - ✅ Email addresses
 - ✅ Phone numbers
 - ✅ Social Security Numbers
@@ -83,12 +94,12 @@ Implemented a comprehensive PII protection system that:
 - ✅ IP addresses
 - ✅ URLs
 
-### Architectural Decision
-⚠️ **Original messages (with PII) are still sent to Azure OpenAI**
-- Deliberate decision for response quality
-- Azure OpenAI has enterprise-grade privacy policies
-- Documented in code comments
-- Can be changed if requirements evolve
+### Complete Protection
+🔒 **No Azure service receives actual PII data**
+- Azure Content Safety APIs: Receives only placeholders
+- Azure OpenAI APIs: Receives only placeholders
+- All PII is masked before leaving the application
+- PII is restored only in user-facing responses
 
 ## Testing Results
 
@@ -106,6 +117,15 @@ Implemented a comprehensive PII protection system that:
 ✓ Email/URL distinction test passed
 ✓ Reset test passed
 ✓ All tests passed!
+```
+
+### OpenAI Integration Tests
+```
+=== OpenAI PII Protection Tests ===
+✓ PII masked before sending to Azure OpenAI
+✓ PII restored in LLM responses
+✓ Messages without PII work correctly
+✓ All OpenAI PII protection tests passed!
 ```
 
 ### Integration Tests

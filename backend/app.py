@@ -54,23 +54,11 @@ async def chat(message: ChatMessage):
     if not is_safe_jailbreak:
         return {"response": "⚠️ Your message appears to be a jailbreak attempt and cannot be processed."}
 
-    # If both checks pass, process the message
-    # ARCHITECTURAL DECISION: We send the original message (with PII) to Azure OpenAI
-    # for better context and response quality. This is acceptable because:
-    # 1. Azure OpenAI has enterprise-grade data handling and privacy policies
-    # 2. The primary concern is preventing PII leakage to Content Safety APIs,
-    #    which analyze content for moderation but don't need actual PII
-    # 3. The LLM needs full context to provide accurate, personalized responses
-    # Note: If Azure OpenAI provider changes or stricter PII policies are required,
-    # this decision should be revisited and PII masking applied here as well.
-    response = await get_llm_response(message.message)
+    # If both checks pass, process the message with Azure OpenAI
+    # PII is masked before sending to Azure OpenAI to ensure complete privacy protection
+    response = await get_llm_response(message.message, combined_pii_mapping)
     
-    # If the response contains any PII placeholders (unlikely but possible),
-    # restore them. This would happen if the safety APIs returned messages
-    # that included the placeholders.
-    if combined_pii_mapping:
-        response = restore_pii(response, combined_pii_mapping)
-    
+    # The response already has PII restored by get_llm_response if needed
     return {"response": response}
 
 

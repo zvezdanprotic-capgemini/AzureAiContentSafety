@@ -2,8 +2,8 @@
 """
 Demonstration of PII Protection Feature
 
-This script demonstrates how PII is masked before being sent to Azure Content Safety
-and how it can be restored afterwards if needed.
+This script demonstrates how PII is masked before being sent to ALL Azure services
+(Content Safety, OpenAI, etc.) and how it is restored in responses.
 """
 
 import sys
@@ -68,7 +68,7 @@ def demonstrate_pii_masking():
         print(f"\n📝 Original Message:")
         print(f"   {original}")
         
-        print(f"\n🔒 Masked Message (sent to Azure Content Safety):")
+        print(f"\n🔒 Masked Message (sent to ALL Azure services):")
         print(f"   {masked}")
         
         print(f"\n🔑 PII Mappings:")
@@ -95,9 +95,10 @@ def demonstrate_pii_masking():
     
     print("Summary:")
     print("--------")
-    print("✓ PII is automatically detected and masked before sending to Azure Content Safety")
+    print("✓ PII is automatically detected and masked before sending to ALL Azure services")
+    print("✓ This includes: Azure Content Safety, Azure OpenAI, and all other Azure APIs")
     print("✓ Masked placeholders (e.g., [EMAIL_1], [PHONE_1]) are sent instead of real data")
-    print("✓ Original PII can be restored if needed for user-facing responses")
+    print("✓ Original PII is restored in user-facing responses for proper context")
     print("✓ Supported PII types: Email, Phone, SSN, Credit Card, IP Address, URL")
     print()
 

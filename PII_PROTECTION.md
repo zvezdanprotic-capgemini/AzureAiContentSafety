@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation ensures that Personally Identifiable Information (PII) is automatically detected and masked before being sent to Azure Content Safety APIs, protecting user privacy while still allowing the system to perform content moderation.
+This implementation ensures that Personally Identifiable Information (PII) is automatically detected and masked before being sent to **ALL Azure services**, including Azure Content Safety APIs and Azure OpenAI, protecting user privacy while still allowing the system to perform content moderation and generate responses.
 
 ## How It Works
 
@@ -12,7 +12,7 @@ When a user message is received:
 1. The message is scanned for common PII patterns using regular expressions
 2. Detected PII is replaced with placeholder tokens (e.g., `[EMAIL_1]`, `[PHONE_1]`)
 3. A mapping is created to track which placeholder corresponds to which original value
-4. The masked message (with placeholders) is sent to Azure Content Safety APIs
+4. The masked message (with placeholders) is sent to **all Azure services**
 
 ### 2. PII Types Detected
 
@@ -27,8 +27,8 @@ The system automatically detects and masks the following types of PII:
 
 ### 3. PII Restoration
 
-After content moderation is complete:
-1. If the response contains any placeholder tokens, they can be restored to original values
+After processing is complete:
+1. If the LLM response contains any placeholder tokens, they are automatically restored to original values
 2. The PII mapping is preserved throughout the request lifecycle
 3. User-facing responses maintain full context with actual PII when appropriate
 
@@ -42,10 +42,14 @@ User Message (with PII)
 Azure Content Safety API ← receives placeholders, not actual PII
     ↓
 [Content Moderation]
+    ↓ (masked message continues)
+Azure OpenAI API ← also receives placeholders, not actual PII
     ↓
-[PII Restoration if needed]
+[LLM Response with placeholders]
     ↓
-Response to User
+[PII Restoration]
+    ↓
+Response to User (with restored PII)
 ```
 
 ## Implementation Files
@@ -68,29 +72,36 @@ Updated to mask PII before jailbreak detection:
 - Masks PII before sending to jailbreak detection API
 - Preserves PII mapping even in error cases
 
+### `/backend/openai_client.py`
+Updated to mask PII before sending to Azure OpenAI:
+- `get_llm_response()` now accepts optional `pii_mapping` parameter
+- Masks PII before sending to Azure OpenAI API
+- Restores PII in the LLM response automatically
+- Uses existing PII mapping from safety checks if provided
+
 ### `/backend/app.py`
 Main application logic updated to handle PII lifecycle:
 - Collects PII mappings from all safety checks
-- Combines mappings for comprehensive tracking
-- Restores PII in responses when needed
+- Passes combined PII mapping to OpenAI client
+- PII is automatically restored in the final response
 
 ## Security Considerations
 
-### What Is Protected
-✅ **User PII is masked before being sent to Azure Content Safety APIs**
-- Content Safety APIs receive only placeholder tokens
-- Actual emails, phone numbers, SSNs, etc., never leave the application
+### Complete PII Protection
+✅ **User PII is masked before being sent to ALL Azure services**
+- Azure Content Safety APIs receive only placeholder tokens
+- Azure OpenAI APIs receive only placeholder tokens
+- Actual emails, phone numbers, SSNs, etc., never leave the application to external services
 - PII mappings are stored only in memory for the duration of the request
 
-### Architectural Decision: Azure OpenAI
-⚠️ **Original messages (with PII) are still sent to Azure OpenAI**
+### Privacy Guarantee
+🔒 **No Azure service receives actual PII data**
 
-This is a deliberate architectural decision:
-- Azure OpenAI has enterprise-grade data handling and privacy policies
-- The LLM needs full context to provide accurate, personalized responses
-- The primary concern is preventing PII leakage to Content Safety APIs used for moderation
-
-**Note**: If stricter PII policies are required or if the LLM provider changes, this decision should be revisited.
+This ensures:
+- Maximum privacy protection for user data
+- Compliance with strict data handling policies
+- Reduced risk of PII exposure through third-party services
+- Clear audit trail of PII handling
 
 ## Testing
 
